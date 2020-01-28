@@ -6,7 +6,11 @@
     </header>
     <main class="file-list-main">
       <ul>
-        <li v-for="(file, index) in fileList" :key="index">
+        <li
+          v-for="(file, index) in fileList"
+          :key="index"
+          @click="emitHome(file)"
+        >
           <span class="file-name">{{ file.name }}</span>
           <span class="file-content" v-if="file.status === 'loading'">123</span>
         </li>
@@ -36,10 +40,12 @@
 <script lang="ts">
 import { createComponent, reactive, ref, watch } from "@vue/composition-api";
 import { useReadFile, useApi } from "@/hook/index";
+import { readFileToArrayBuffer } from "../../shared/common";
+import { FileData } from "../../hook/useReadFile";
 
 export default createComponent({
   name: "FileList",
-  setup() {
+  setup(props, ctx) {
     const fileDom = ref<HTMLInputElement>(null);
     const visible = ref<boolean>(false);
     const url = ref<string>("");
@@ -48,7 +54,9 @@ export default createComponent({
       readFileOnDrag,
       readFileOnInput,
       readFileOnUrl
-    } = useReadFile();
+    } = useReadFile({
+      transformFile: readFileToArrayBuffer
+    });
     // methods
     function handleClick() {
       fileDom.value!.value = "";
@@ -75,6 +83,10 @@ export default createComponent({
       });
     }
 
+    function emitHome(file: FileData) {
+      ctx.emit("renderWave", file);
+    }
+
     return {
       url,
       visible,
@@ -83,7 +95,8 @@ export default createComponent({
       readFileOnInput,
       handleClick,
       openDialog,
-      handleLoad
+      handleLoad,
+      emitHome
     };
   }
 });

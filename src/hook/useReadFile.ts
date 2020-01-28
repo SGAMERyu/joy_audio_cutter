@@ -8,7 +8,7 @@ export enum FileStatus {
   removed = "removed"
 }
 
-interface FileData {
+export interface FileData {
   name: string;
   status: FileStatus;
   data: any;
@@ -31,7 +31,10 @@ export default function useReadFile(props: Partial<ReadFileProps> = {}) {
       };
       fileList.value.push(currentFile);
       try {
-        if (props.transformFile) await props.transformFile(file);
+        if (props.transformFile) {
+          const data = await props.transformFile(file);
+          currentFile.data = data;
+        }
       } catch (error) {
         currentFile.status = FileStatus.error;
       }
