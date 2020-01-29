@@ -1,5 +1,5 @@
 <template>
-  <div class="renderWave-wrapper"></div>
+  <div class="renderWave-wrapper" ref="wrapper"></div>
 </template>
 
 <script lang="ts">
@@ -9,9 +9,11 @@ import {
   watch,
   onMounted,
   Ref,
-  SetupContext
+  SetupContext,
+  ref
 } from "@vue/composition-api";
 import { FileData } from "../../hook/useReadFile";
+import RenderWave from "../../core/render";
 
 interface RenderWaveProps {
   data: Ref<FileData>;
@@ -29,13 +31,15 @@ export default createComponent({
     }
   },
   setup(props: RenderWaveProps, ctx: SetupContext) {
-    watch(
-      () => props.data,
-      val => {
-        console.log(val);
-      },
-      { lazy: true }
-    );
+    const wrapper = ref<HTMLDivElement>();
+    let render!: RenderWave;
+    onMounted(() => {
+      render = new RenderWave(wrapper.value!);
+      render.render();
+    });
+    return {
+      wrapper
+    };
   }
 });
 </script>
