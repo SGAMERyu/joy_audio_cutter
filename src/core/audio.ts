@@ -1,6 +1,7 @@
 interface AudioProps {
   duration: number;
   channelData: Float32Array;
+  sampleRate: number;
 }
 
 class AudioEditor {
@@ -15,9 +16,15 @@ class AudioEditor {
   get channelData() {
     return this.audioProps.channelData;
   }
+  get sampleRate() {
+    return this.audioProps.sampleRate;
+  }
   async decodeBuffer(buffer: ArrayBuffer) {
     const audioBuffer = await this.ctx.decodeAudioData(buffer);
-    this.audioProps.duration = audioBuffer.duration;
-    this.audioProps.channelData = audioBuffer.getChannelData(0);
+    const { duration, sampleRate } = audioBuffer;
+    const channelData = audioBuffer.getChannelData(0);
+    this.audioProps = { duration, sampleRate, channelData };
   }
 }
+
+export default AudioEditor;

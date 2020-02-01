@@ -14,9 +14,10 @@ import {
 } from "@vue/composition-api";
 import { FileData } from "../../hook/useReadFile";
 import RenderWave from "../../core/render";
+import { useRender } from "../../hook";
 
 interface RenderWaveProps {
-  data: Ref<FileData>;
+  data: FileData;
 }
 
 export default createComponent({
@@ -32,11 +33,15 @@ export default createComponent({
   },
   setup(props: RenderWaveProps, ctx: SetupContext) {
     const wrapper = ref<HTMLDivElement>();
-    let render!: RenderWave;
-    onMounted(() => {
-      render = new RenderWave(wrapper.value!);
-      render.render();
-    });
+    const { handleRender } = useRender();
+    watch(
+      () => props.data,
+      val => {
+        const { data } = val;
+        handleRender(wrapper.value!, data);
+      },
+      { lazy: true }
+    );
     return {
       wrapper
     };
