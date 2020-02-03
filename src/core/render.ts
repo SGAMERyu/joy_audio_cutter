@@ -1,7 +1,8 @@
-interface RenderProps {
+interface waveProps {
   channelData: Float32Array;
   sampleRate: number;
-  duration: number;
+  beginTime: number;
+  endTime: number;
 }
 
 const constant = {
@@ -9,6 +10,7 @@ const constant = {
   paddingColor: "rgba(0, 0, 0, 0.1)",
   gridColor: "rgba(255, 255, 255, 0.05)",
   ruleColor: "rgba(26, 241, 25, 1)",
+  waveColor: "rgba(26, 241, 25, 0.8)",
   baseRuleHeight: 5,
   baseFont: 12,
   ruleGap: 5,
@@ -50,8 +52,10 @@ class RenderWave {
   private ctx!: CanvasRenderingContext2D;
   private gridNum!: number;
   private gridGap!: number;
-  constructor(el: HTMLElement) {
+  private waveProps!: waveProps;
+  constructor(el: HTMLElement, options: waveProps) {
     this.container = el;
+    this.waveProps = options;
     this.initTemplate();
     this.initProps();
   }
@@ -71,11 +75,16 @@ class RenderWave {
     this.gridNum = interval * ruleGap * 2 + padding * 2;
     this.gridGap = width / this.gridNum;
   }
-  render(props: RenderProps) {
+  setTime(beginTime: number, endTime: number) {
+    this.waveProps.beginTime = beginTime;
+    this.waveProps.endTime = endTime;
+    this.render();
+  }
+  render() {
     this.drawBackGround();
     this.drawGrid();
     this.drawRule();
-    this.drawWave(props);
+    this.drawWave();
   }
   private drawBackGround() {
     const { width, height } = this.canvas;
@@ -112,8 +121,8 @@ class RenderWave {
       baseRuleHeight,
       ruleGap
     } = constant;
+    const { beginTime } = this.waveProps;
     let second = -1;
-    let beginTime = 0;
     this.ctx.font = `${baseFont * 2}px`;
     this.ctx.fillStyle = ruleColor;
     for (let i = 0; i < this.gridNum; i++) {
@@ -124,7 +133,7 @@ class RenderWave {
         (i - padding) % (ruleGap * 2) === 0
       ) {
         second += 1;
-        const time = durationToTime(beginTime + second);
+        const time = durationToTime(this.waveProps.beginTime + second);
         this.ctx.fillRect(i * this.gridGap, 0, gridWidth, baseRuleHeight * 2);
         this.ctx.fillText(time, this.gridGap * i - baseFont, baseFont * 2);
       } else if (i && (i - padding) % ruleGap === 0) {
@@ -132,16 +141,19 @@ class RenderWave {
       }
     }
   }
-  private drawWave(props: RenderProps) {
-    const { channelData, sampleRate, duration } = props;
+  private drawWave() {
+    const { channelData, sampleRate, beginTime, endTime } = this.waveProps;
     const { width, height } = this.canvas;
-    const { padding } = constant;
-    let beginTime = 0;
+    const { padding, waveColor } = constant;
     const waveWidth = width - padding * 2 * this.gridGap;
     const waveStartIndex = this.gridGap * padding;
     const middleHeight = height / 2;
     const startIndex = clamp(beginTime * sampleRate, 0, Infinity);
-    const endIndex = clamp((beginTime + 1) * sampleRate, startIndex, Infinity);
+    const endIndex = clamp(
+      (beginTime + endTime) * sampleRate,
+      startIndex,
+      Infinity
+    );
     const step = Math.floor((endIndex - startIndex) / waveWidth);
     let stepIndex = 0;
     let xIndex = 0;
@@ -155,7 +167,7 @@ class RenderWave {
       if (stepIndex > step && xIndex < waveWidth) {
         xIndex += 1;
         const waveX = waveStartIndex + xIndex;
-        this.ctx.fillStyle = "red";
+        this.ctx.fillStyle = waveColor;
         this.ctx.fillRect(
           waveX,
           (1 + min * 0.8) * middleHeight,

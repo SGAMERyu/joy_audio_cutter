@@ -4,7 +4,12 @@
       <file-list @renderWave="sendRender"></file-list>
     </section>
     <section class="home-file-visual">
-      <render-wave :data="renderAudio"></render-wave>
+      <div class="home-render">
+        <render-wave :data="renderAudio"></render-wave>
+      </div>
+      <div class="home-player">
+        <joy-slider v-model="duration"></joy-slider>
+      </div>
     </section>
     <section class="home-file-tool"></section>
   </div>
@@ -25,13 +30,15 @@ export default createComponent({
   },
   setup() {
     let renderAudio = ref<FileData>();
+    let duration = ref<number>(0);
     function sendRender(file: FileData) {
       renderAudio.value = file;
     }
 
     return {
       renderAudio,
-      sendRender
+      sendRender,
+      duration
     };
   }
 });
@@ -42,21 +49,37 @@ export default createComponent({
   display: flex;
   border: 4px solid rgba(66, 69, 88, 1);
 }
+
 .home-file-list {
   width: 300px;
-  min-height: 400px;
+  height: 400px;
   background: rgba(35, 41, 58, 1);
   box-sizing: border-box;
   color: #ffffff;
+  border-right: 4px solid #424558;
 }
+
 .home-file-visual {
   flex: 1 0 auto;
-  min-height: 400px;
+  height: 400px;
   background: rgba(23, 26, 40, 1);
 }
+
+.home-render {
+  height: 360px;
+}
+
+.home-player {
+  display: flex;
+  align-items: center;
+  background: #23293a;
+  height: 40px;
+  padding: 0 15px;
+}
+
 .home-file-tool {
   width: 300px;
-  min-height: 400px;
+  height: 400px;
   background: rgba(42, 46, 65, 1);
 }
 </style>
