@@ -1,44 +1,50 @@
 <template>
   <div class="home">
     <section class="home-file-list">
-      <file-list @renderWave="sendRender"></file-list>
+      <file-list @renderWave="setAudioFile"></file-list>
     </section>
     <section class="home-file-visual">
       <div class="home-render">
-        <render-wave :data="renderAudio"></render-wave>
+        <render-wave :file="audioFile"></render-wave>
       </div>
       <div class="home-player">
-        <joy-slider v-model="duration"></joy-slider>
+        <audio-player :file="audioFile"></audio-player>
       </div>
     </section>
-    <section class="home-file-tool"></section>
   </div>
 </template>
 
 <script lang="ts">
-import { createComponent, watch, onMounted, ref } from "@vue/composition-api";
-import { useReadFile } from "../hook";
+import {
+  createComponent,
+  watch,
+  onMounted,
+  ref,
+  reactive,
+  provide
+} from "@vue/composition-api";
 import FileList from "@/components/home/fileList.vue";
 import RenderWave from "@/components/common/render.vue";
+import AudioPlayer from "@/components/common/player.vue";
 import { FileData } from "../hook/useReadFile";
 
 export default createComponent({
   name: "Home",
   components: {
     FileList,
-    RenderWave
+    RenderWave,
+    AudioPlayer
   },
   setup() {
-    let renderAudio = ref<FileData>();
-    let duration = ref<number>(0);
-    function sendRender(file: FileData) {
-      renderAudio.value = file;
+    let audioFile = ref<File>();
+    async function setAudioFile(file: FileData) {
+      const { data } = file;
+      audioFile.value = data;
     }
 
     return {
-      renderAudio,
-      sendRender,
-      duration
+      audioFile,
+      setAudioFile
     };
   }
 });
@@ -70,16 +76,8 @@ export default createComponent({
 }
 
 .home-player {
-  display: flex;
-  align-items: center;
   background: #23293a;
   height: 40px;
   padding: 0 15px;
-}
-
-.home-file-tool {
-  width: 300px;
-  height: 400px;
-  background: rgba(42, 46, 65, 1);
 }
 </style>

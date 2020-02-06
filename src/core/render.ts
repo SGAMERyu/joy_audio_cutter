@@ -1,3 +1,5 @@
+import { durationToTime, readFileToArrayBuffer } from "@/shared/common/index";
+
 interface waveProps {
   channelData: Float32Array;
   sampleRate: number;
@@ -20,28 +22,6 @@ const constant = {
   gridHeight: 2
 };
 
-function formatTime(time: number) {
-  let result: string = time > 0 ? (time >= 10 ? `${time}` : "0" + time) : "00";
-  return result;
-}
-
-function durationToTime(duration: number) {
-  let hour = 0;
-  let minute = 0;
-  let second: string | number = duration;
-  if (duration >= 60) {
-    minute = duration / 60;
-    second = duration % 60;
-    if (minute >= 60) {
-      hour = minute / 60;
-      minute = minute % 60;
-    }
-  }
-  return `${hour > 0 ? hour + ":" : ""}${formatTime(
-    Math.floor(minute)
-  )}:${formatTime(Math.floor(second))}`;
-}
-
 function clamp(num: number, a: number, b: number) {
   return Math.max(Math.min(num, Math.max(a, b)), Math.min(a, b));
 }
@@ -53,9 +33,8 @@ class RenderWave {
   private gridNum!: number;
   private gridGap!: number;
   private waveProps!: waveProps;
-  constructor(el: HTMLElement, options: waveProps) {
+  constructor(el: HTMLElement) {
     this.container = el;
-    this.waveProps = options;
     this.initTemplate();
     this.initProps();
   }
@@ -69,11 +48,24 @@ class RenderWave {
     this.canvas.style.height = "100%";
     this.container.appendChild(this.canvas);
   }
-  initProps() {
+  async initProps() {
     const { width } = this.canvas;
     const { interval, padding, ruleGap } = constant;
     this.gridNum = interval * ruleGap * 2 + padding * 2;
     this.gridGap = width / this.gridNum;
+  }
+  async initWaveData(audioFile: File) {
+    const ctx = new AudioContext();
+    const arrayBuffer = await readFileToArrayBuffer(audioFile);
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    const { sampleRate } = audioBuffer;
+    const channelData = audioBuffer.getChannelData(0);
+    this.waveProps = {
+      sampleRate,
+      channelData,
+      beginTime: 0,
+      endTime: 10
+    };
   }
   setTime(beginTime: number, endTime: number) {
     this.waveProps.beginTime = beginTime;

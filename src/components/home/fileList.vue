@@ -54,9 +54,7 @@ export default createComponent({
       readFileOnDrag,
       readFileOnInput,
       readFileOnUrl
-    } = useReadFile({
-      transformFile: readFileToArrayBuffer
-    });
+    } = useReadFile();
     // methods
     function handleClick() {
       fileDom.value!.value = "";

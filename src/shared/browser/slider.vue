@@ -31,9 +31,6 @@ export default createComponent({
   },
   setup(props, ctx) {
     const scrollBar = ref<HTMLDivElement>();
-    const thumb = ref<HTMLDivElement>();
-    const barWidth = ref<number>(0);
-    const thumbLeft = ref<number>(0);
     const { min, max } = props;
     let startX: number = 0;
     let newOffset: number = 0;
@@ -98,7 +95,6 @@ export default createComponent({
     return {
       handleClick,
       scrollBar,
-      thumb,
       thumbStyle,
       trackStyle,
       slideOffset,

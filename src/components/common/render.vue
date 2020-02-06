@@ -7,41 +7,39 @@ import {
   createComponent,
   PropType,
   watch,
-  onMounted,
-  Ref,
+  ref,
   SetupContext,
-  ref
+  onMounted
 } from "@vue/composition-api";
-import { FileData } from "../../hook/useReadFile";
 import RenderWave from "../../core/render";
-import { useRender } from "../../hook";
 
-interface RenderWaveProps {
-  data: FileData;
+interface RenderProps {
+  file: File;
 }
 
 export default createComponent({
-  name: "renderWave",
+  name: "render",
   props: {
-    data: {
-      type: Object as PropType<Ref<FileData>>,
-      required: true,
-      default() {
-        return {};
-      }
+    file: {
+      required: true
     }
   },
-  setup(props: RenderWaveProps, ctx: SetupContext) {
-    const wrapper = ref<HTMLDivElement>();
-    const { handleRender } = useRender();
-    watch(
-      () => props.data,
-      val => {
-        const { data } = val;
-        handleRender(wrapper.value!, data);
-      },
-      { lazy: true }
-    );
+  setup(props: RenderProps, ctx: SetupContext) {
+    let wrapper = ref<HTMLDivElement>();
+    let renderWave: RenderWave;
+    onMounted(() => {
+      renderWave = new RenderWave(wrapper.value!);
+      watch(
+        () => props.file,
+        async (val: File) => {
+          await renderWave.initWaveData(val);
+          renderWave.render();
+        },
+        {
+          lazy: true
+        }
+      );
+    });
     return {
       wrapper
     };
