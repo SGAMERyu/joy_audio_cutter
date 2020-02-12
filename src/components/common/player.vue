@@ -1,10 +1,16 @@
 <template>
   <div class="player-wrapper">
     <audio :src="audioSrc" ref="audio"></audio>
-    <button class="player-btn" @click="handleClick"></button>
-    <!-- <button class="player-btn" @click="handleToggle"></button>
-    <joy-slider class="player-slider" v-model="value"></joy-slider>
-    <div class="player-duration">{{ duration }}</div> -->
+    <div class="player-btn btn-play" @click="handleStart"></div>
+    <div class="player-btn btn-pause" @click="handleStop"></div>
+    <div class="player-slider">
+      <joy-slider v-model="value"></joy-slider>
+    </div>
+    <div class="player-time">
+      <span>{{ time }}</span>
+      <span>/</span>
+      <span>{{ duration }}</span>
+    </div>
   </div>
 </template>
 
@@ -14,8 +20,11 @@ import {
   SetupContext,
   onMounted,
   ref,
-  watch
+  watch,
+  computed
 } from "@vue/composition-api";
+import { useAudio } from "../../hook";
+import { durationToTime } from '../../shared/common';
 
 interface PlayerProps {
   file: File;
@@ -29,6 +38,24 @@ export default createComponent({
   setup(props: PlayerProps, ctx: SetupContext) {
     let audioSrc = ref<string>();
     let audio = ref<HTMLAudioElement>();
+    let value = ref<number>(0);
+    const { setAudio, controls, state } = useAudio();
+    const time = computed(() => {
+      return durationToTime(state.time);
+    });
+    const duration = computed(() => {
+      return durationToTime(state.duration);
+    });
+    onMounted(() => {
+      setAudio(audio.value!);
+    });
+    watch(
+      () => state.time,
+      (val: number) => {
+        value.value = val;
+      },
+      { lazy: true }
+    );
     watch(
       () => props.file,
       (val: File) => {
@@ -36,13 +63,20 @@ export default createComponent({
       },
       { lazy: true }
     );
-    function handleClick() {
-      audio.value!.play();
+    function handleStart() {
+      controls.value!.play();
+    }
+    function handleStop() {
+      controls.value!.pause();
     }
     return {
       audioSrc,
       audio,
-      handleClick
+      handleStart,
+      handleStop,
+      time,
+      duration,
+      value
     };
   }
 });
@@ -51,7 +85,6 @@ export default createComponent({
 <style lang="scss" scoped>
 .player-wrapper {
   display: flex;
-  justify-content: space-around;
   align-items: center;
   width: 100%;
   height: 100%;
@@ -59,16 +92,25 @@ export default createComponent({
 .player-btn {
   width: 24px;
   height: 24px;
-  background: red;
   box-sizing: border-box;
   border: none;
   outline: none;
+  margin-right: 8px;
+  cursor: pointer;
+}
+.btn-play {
+  background-image: url("./assets/play.png");
+  background-size: cover;
+}
+.btn-pause {
+  background-image: url("./assets/pause.png");
+  background-size: cover;
 }
 .player-slider {
-  margin: 0 15px;
-  flex: 0 1 auto;
+  margin-right: 15px;
+  flex: 1 0 auto;
 }
-.player-duration {
+.player-time {
   color: #ffffff;
   text-align: center;
 }
