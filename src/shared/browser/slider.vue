@@ -11,7 +11,13 @@
 </template>
 
 <script lang="ts">
-import { createComponent, ref, computed, watch } from "@vue/composition-api";
+import {
+  createComponent,
+  ref,
+  computed,
+  watch,
+  toRefs
+} from "@vue/composition-api";
 
 export default createComponent({
   name: "joySlider",
@@ -31,33 +37,40 @@ export default createComponent({
   },
   setup(props, ctx) {
     const scrollBar = ref<HTMLDivElement>();
-    const { min, max } = props;
+    const { min, max } = toRefs(props);
     let startX: number = 0;
     let newOffset: number = 0;
     let drag = false;
 
     const slideOffset = computed(() => {
-      return (100 * props.value) / (max - min);
+      return (100 * props.value) / (max.value - min.value);
     });
     const trackStyle = computed(() => {
       return {
-        width: `${(100 * slideOffset.value) / (max - min)}%`
+        width: `${slideOffset.value}%`
       };
     });
     const thumbStyle = computed(() => {
       return {
-        left: `${(100 * slideOffset.value) / (max - min)}%`
+        left: `${slideOffset.value}%`
       };
     });
 
-    function setValue(value: number) {
-      if (value < min) {
-        ctx.emit("input", min);
+    function emitChange() {
+      ctx.root.$nextTick(() => {
+        ctx.emit("change", props.value);
+      });
+    }
+
+    function setValue(percent: number) {
+      const value = (percent * (max.value - min.value)) / 100;
+      if (value < min.value) {
+        ctx.emit("input", min.value);
       }
-      if (value > max) {
-        ctx.emit("input", max);
+      if (value > max.value) {
+        ctx.emit("input", max.value);
       }
-      if (value > min && value < max) {
+      if (value > min.value && value < max.value) {
         ctx.emit("input", value);
       }
     }
@@ -68,6 +81,7 @@ export default createComponent({
       const { width, left } = scrollBar.value!.getBoundingClientRect();
       const slideOffset = ((clientX - left) / width) * 100;
       setValue(slideOffset);
+      emitChange();
     }
 
     function handleDown(e: MouseEvent) {
@@ -90,6 +104,7 @@ export default createComponent({
       drag = false;
       window.removeEventListener("mousemove", handleDraging);
       window.removeEventListener("mouseup", handleDragEnd);
+      emitChange();
     }
 
     return {

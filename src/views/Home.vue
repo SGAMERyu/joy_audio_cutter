@@ -5,10 +5,10 @@
     </section>
     <section class="home-file-visual">
       <div class="home-render">
-        <render-wave :file="audioFile"></render-wave>
+        <render-wave :file="audioFile" :time="time"></render-wave>
       </div>
       <div class="home-player">
-        <audio-player :file="audioFile"></audio-player>
+        <audio-player :file="audioFile" @playAudio="sendTime"></audio-player>
       </div>
     </section>
   </div>
@@ -37,14 +37,20 @@ export default createComponent({
   },
   setup() {
     let audioFile = ref<File>();
+    let time = ref<number>(0);
     async function setAudioFile(file: FileData) {
       const { data } = file;
       audioFile.value = data;
     }
+    function sendTime(val: number) {
+      time.value = val;
+    }
 
     return {
       audioFile,
-      setAudioFile
+      setAudioFile,
+      sendTime,
+      time
     };
   }
 });

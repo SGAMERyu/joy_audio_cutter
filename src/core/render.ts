@@ -67,9 +67,10 @@ class RenderWave {
       endTime: 10
     };
   }
-  setTime(beginTime: number, endTime: number) {
-    this.waveProps.beginTime = beginTime;
-    this.waveProps.endTime = endTime;
+  setTime(currentTime: number) {
+    const { interval } = constant;
+    this.waveProps.beginTime = currentTime;
+    this.waveProps.endTime = currentTime + interval;
     this.render();
   }
   render() {
@@ -140,9 +141,9 @@ class RenderWave {
     const waveWidth = width - padding * 2 * this.gridGap;
     const waveStartIndex = this.gridGap * padding;
     const middleHeight = height / 2;
-    const startIndex = clamp(beginTime * sampleRate, 0, Infinity);
+    const startIndex = clamp(Math.floor(beginTime) * sampleRate, 0, Infinity);
     const endIndex = clamp(
-      (beginTime + endTime) * sampleRate,
+      Math.floor(beginTime + endTime) * sampleRate,
       startIndex,
       Infinity
     );

@@ -41,6 +41,7 @@ export default function useAudio() {
 
   function addListener() {
     refAudio.value!.addEventListener("timeupdate", () => {
+      console.log(2, refAudio.value!.currentTime);
       state.time = refAudio.value!.currentTime;
     });
     refAudio.value!.addEventListener("loadedmetadata", () => {

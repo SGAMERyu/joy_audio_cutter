@@ -15,6 +15,7 @@ import RenderWave from "../../core/render";
 
 interface RenderProps {
   file: File;
+  time: number;
 }
 
 export default createComponent({
@@ -22,6 +23,9 @@ export default createComponent({
   props: {
     file: {
       required: true
+    },
+    time: {
+      type: Number
     }
   },
   setup(props: RenderProps, ctx: SetupContext) {
@@ -29,17 +33,24 @@ export default createComponent({
     let renderWave: RenderWave;
     onMounted(() => {
       renderWave = new RenderWave(wrapper.value!);
-      watch(
-        () => props.file,
-        async (val: File) => {
-          await renderWave.initWaveData(val);
-          renderWave.render();
-        },
-        {
-          lazy: true
-        }
-      );
     });
+    watch(
+      () => props.file,
+      async (val: File) => {
+        await renderWave.initWaveData(val);
+        renderWave.render();
+      },
+      {
+        lazy: true
+      }
+    );
+    watch(
+      () => props.time,
+      (val: number) => {
+        renderWave.setTime(val);
+      },
+      { lazy: true }
+    );
     return {
       wrapper
     };

@@ -4,7 +4,11 @@
     <div class="player-btn btn-play" @click="handleStart"></div>
     <div class="player-btn btn-pause" @click="handleStop"></div>
     <div class="player-slider">
-      <joy-slider v-model="value"></joy-slider>
+      <joy-slider
+        v-model="value"
+        :max="state.duration"
+        @change="handleSeek"
+      ></joy-slider>
     </div>
     <div class="player-time">
       <span>{{ time }}</span>
@@ -24,7 +28,7 @@ import {
   computed
 } from "@vue/composition-api";
 import { useAudio } from "../../hook";
-import { durationToTime } from '../../shared/common';
+import { durationToTime } from "../../shared/common";
 
 interface PlayerProps {
   file: File;
@@ -53,6 +57,7 @@ export default createComponent({
       () => state.time,
       (val: number) => {
         value.value = val;
+        ctx.emit("playAudio", val);
       },
       { lazy: true }
     );
@@ -69,14 +74,20 @@ export default createComponent({
     function handleStop() {
       controls.value!.pause();
     }
+    function handleSeek(time: number) {
+      console.log("seek", time);
+      controls.value.seek(time);
+    }
     return {
       audioSrc,
       audio,
       handleStart,
       handleStop,
       time,
+      state,
       duration,
-      value
+      value,
+      handleSeek
     };
   }
 });
