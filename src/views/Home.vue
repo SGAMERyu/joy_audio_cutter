@@ -27,6 +27,8 @@ import FileList from "@/components/home/fileList.vue";
 import RenderWave from "@/components/common/render.vue";
 import AudioPlayer from "@/components/common/player.vue";
 import { FileData } from "../hook/useReadFile";
+import audioEditor from "@/core/editor";
+import { readFileToArrayBuffer } from "../shared/common";
 
 export default createComponent({
   name: "Home",
@@ -41,6 +43,9 @@ export default createComponent({
     async function setAudioFile(file: FileData) {
       const { data } = file;
       audioFile.value = data;
+      const buffer = await readFileToArrayBuffer(data);
+      const audioBuffer = await audioEditor.decodeBuffer(buffer);
+      audioEditor.cutAudio(audioBuffer, 0, 10);
     }
     function sendTime(val: number) {
       time.value = val;

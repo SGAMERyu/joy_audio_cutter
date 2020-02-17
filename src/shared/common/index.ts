@@ -32,3 +32,10 @@ export function durationToTime(duration: number) {
     Math.floor(minute)
   )}:${formatTime(Math.floor(second))}`;
 }
+
+export function downloadFile(name: string, url: string) {
+  const downloadRef = document.createElement("a");
+  downloadRef.download = name;
+  downloadRef.href = url;
+  downloadRef.click();
+}
