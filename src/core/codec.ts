@@ -50,5 +50,16 @@ export function transformBufferToWav(audioBuffer: AudioBuffer) {
     const data = Math.max(-1, Math.min(1, channelDataAry[i]));
     view.setUint16(offset, data < 0 ? data * 0x8000 : data * 0x7fff, true);
   }
-  return buffer;
+  return new Blob([buffer], { type: "audio/wav" });
+}
+
+export function transformBufferToMP3(audioBuffer: AudioBuffer) {
+  const { sampleRate, numberOfChannels } = audioBuffer;
+  const leftChannel = audioBuffer.getChannelData(0);
+  const rightChannel =
+    numberOfChannels === 2 ? audioBuffer.getChannelData(1) : null;
+  const channelDataAry = mergeChannel(leftChannel, rightChannel);
+  const buffer = new ArrayBuffer(32 + channelDataAry.length * 2);
+  const view = new DataView(buffer);
+  writeString(view, "sync", 0);
 }

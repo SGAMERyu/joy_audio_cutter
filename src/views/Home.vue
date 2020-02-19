@@ -11,6 +11,7 @@
         <audio-player :file="audioFile" @playAudio="sendTime"></audio-player>
       </div>
     </section>
+    <section class="download-list"></section>
   </div>
 </template>
 
@@ -45,7 +46,10 @@ export default createComponent({
       audioFile.value = data;
       const buffer = await readFileToArrayBuffer(data);
       const audioBuffer = await audioEditor.decodeBuffer(buffer);
-      audioEditor.cutAudio(audioBuffer, 0, 10);
+      const stop = await audioEditor.recordAudio();
+      setTimeout(() => {
+        stop();
+      }, 5000);
     }
     function sendTime(val: number) {
       time.value = val;
